@@ -50,10 +50,10 @@ type Config struct {
 func (c *Config) Init(confPath, logPath string) error {
 	c.Log = lightlog.NewLogger(10)
 	c.Log.TimeFormat = "2006-01-02 15:04:05 -0700"
-	c.Log.Prefix = "[RpiDDNS]"
+	c.Log.Prefix = "RpiDDNS"
 	if confPath == "" {
 		confPath = utils.GetCurPath() + sysutils.PathSeparator() + "settings.json"
-		c.Log.Debug("use default settings file:", confPath)
+		c.Log.Info("use default settings file:", confPath)
 	}
 	byts, err := ioutil.ReadFile(confPath)
 	if err != nil {
@@ -109,7 +109,7 @@ func (c *Config) Init(confPath, logPath string) error {
 
 	if logPath == "" {
 		logPath = utils.GetCurPath() + sysutils.PathSeparator() + "ddns.log"
-		c.Log.Debug("use default log file:", logPath)
+		c.Log.Info("use default log file:", logPath)
 	}
 	f, err := os.OpenFile(logPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE|os.O_SYNC, 0644)
 	if err != nil {

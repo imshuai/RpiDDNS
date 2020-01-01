@@ -6,6 +6,7 @@ import (
 	"RpiDDNS/utils"
 	"fmt"
 	"os"
+	"time"
 )
 
 var (
@@ -13,26 +14,20 @@ var (
 )
 
 func init() {
-	fmt.Println(1)
 	var err error
 	if len(os.Args) > 1 {
-		fmt.Println(2)
 		err = c.Init(os.Args[1], os.Args[2])
 	} else {
-		fmt.Println(3)
 		err = c.Init("", "")
 	}
 	if err != nil {
-		fmt.Println(4)
 		c.Log.Fatal(err.Error())
 		fmt.Println(err)
 		os.Exit(-1)
 	}
-	fmt.Println(5)
 }
 
 func main() {
-	fmt.Println(3)
 	ipv4, err := utils.GetIPv4()
 	if err != nil {
 		c.Log.Error("get ipv4 address fail with error:", err.Error())
@@ -98,4 +93,6 @@ func main() {
 			continue
 		}
 	}
+	c.Log.Info("-----> update all domain's record complete <-----")
+	time.Sleep(1 * time.Second)
 }

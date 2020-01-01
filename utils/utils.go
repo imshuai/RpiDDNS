@@ -83,10 +83,7 @@ func PostData(url string, v url.Values, h http.Header) ([]byte, error) {
 //GetCurPath 获取当前文件执行的路径
 func GetCurPath() string {
 	file, _ := exec.LookPath(os.Args[0])
-	fmt.Println(1, file)
 	path, _ := filepath.Abs(file)
-	fmt.Println(2, path)
 	rst := filepath.Dir(path)
-	fmt.Println(3, rst)
 	return rst
 }

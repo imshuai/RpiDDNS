@@ -75,17 +75,20 @@ func GetDomainID(tDomain string) (string, error) {
 		return "", err
 	}
 	ret := &struct {
-		Status
+		Status Status `json:"status"`
 		Domain Domain `json:"domain"`
 	}{}
 	err = json.Unmarshal(resp, ret)
 	if err != nil {
 		return "", err
 	}
-	if ret.Code == "1" {
+	if ret.Status.Code == "1" {
 		return ret.Domain.ID, nil
 	}
-	return "", errors.New(ret.Message)
+	if ret.Status.Code == "" {
+		return "", errors.New(string(resp))
+	}
+	return "", errors.New(ret.Status.Message)
 }
 
 //GetRecordID 获取subDomain的解析记录ID
@@ -110,12 +113,15 @@ func GetRecordID(subDomain string, domainID string) (string, error) {
 		return "", err
 	}
 	ret := &struct {
-		Status
+		Status  Status   `json:"status"`
 		Records []Record `json:"records"`
 	}{}
-	json.Unmarshal(resp, ret)
-	if ret.Code != "1" {
-		return "", errors.New(ret.Message)
+	err = json.Unmarshal(resp, ret)
+	if err != nil {
+		return "", err
+	}
+	if ret.Status.Code != "1" {
+		return "", errors.New(ret.Status.Message)
 	}
 	return ret.Records[0].ID, nil
 }
@@ -142,16 +148,19 @@ func GetRecordValue(domainID string, recordID string) (string, error) {
 		return "", err
 	}
 	ret := &struct {
-		Status
+		Status Status `json:"status"`
 		Record struct {
 			ID        string `json:"id"`
 			SubDomain string `json:"sub_domain"`
 			Value     string `json:"value"`
 		} `json:"record"`
 	}{}
-	json.Unmarshal(resp, ret)
-	if ret.Code != "1" {
-		return "", errors.New(ret.Message)
+	err = json.Unmarshal(resp, ret)
+	if err != nil {
+		return "", err
+	}
+	if ret.Status.Code != "1" {
+		return "", errors.New(ret.Status.Message)
 	}
 	return ret.Record.Value, nil
 }
@@ -186,9 +195,12 @@ func UpdateRecord(domainID string, recordID, subDomain, recordType, value string
 		return err
 	}
 	ret := &struct {
-		Status
+		Status Status `json:"status"`
 	}{}
-	json.Unmarshal(resp, ret)
+	err = json.Unmarshal(resp, ret)
+	if err != nil {
+		return err
+	}
 	if ret.Status.Code != "1" {
 		return errors.New(ret.Status.Message)
 	}

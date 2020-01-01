@@ -1,4 +1,6 @@
-github.com/imshuai/lightlog v0.0.0-20190621142339-2505d5efbc3a h1:nqtGfccHpeTPV1iX1arCtSLAsnIUTciQZWNGxBvajr0=
-github.com/imshuai/lightlog v0.0.0-20190621142339-2505d5efbc3a/go.mod h1:A4iluG6ldUVYCaldtYoaf+aTEaTwAsQ4FpT1yB5Vn2A=
+github.com/imshuai/lightlog v0.0.0-20200101070107-0a5a7931a122 h1:cenPn/cKzZfDdbjGCKJxOOdHwj39TBen07CL/G5++mc=
+github.com/imshuai/lightlog v0.0.0-20200101070107-0a5a7931a122/go.mod h1:A4iluG6ldUVYCaldtYoaf+aTEaTwAsQ4FpT1yB5Vn2A=
+github.com/imshuai/lightlog v0.0.0-20200101072252-1437d3c2e93e h1:XSMopO/ZZ39BrpfmPGmG3jpXVwghYHHYADlCYemKOMg=
+github.com/imshuai/lightlog v0.0.0-20200101072252-1437d3c2e93e/go.mod h1:A4iluG6ldUVYCaldtYoaf+aTEaTwAsQ4FpT1yB5Vn2A=
 github.com/imshuai/sysutils v0.0.0-20190412142500-1d933a10da83 h1:5mokxEyQmI5GUOVRR2N9AEINvski4rf9FmwE0RXnpjM=
 github.com/imshuai/sysutils v0.0.0-20190412142500-1d933a10da83/go.mod h1:egV/1JusadKyoGEiVmIaJTxkRsTYe+FqvJdrORmc7AM=
