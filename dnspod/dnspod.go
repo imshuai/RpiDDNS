@@ -1,12 +1,16 @@
-package main
+package dnspod
 
 import (
+	"RpiDDNS/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 	"net/url"
 	"reflect"
 )
 
+//Public 公共参数结构体
 type Public struct {
 	LoginToken   string `form:"login_token"`
 	Format       string `form:"format"`
@@ -14,17 +18,20 @@ type Public struct {
 	ErrorOnEmpty string `form:"error_on_empty"`
 }
 
+//Status 公共返回结构体
 type Status struct {
 	Code      string `json:"code"`
 	Message   string `json:"message"`
 	CreatedAt string `json:"created_at"`
 }
 
+//Domain 域名信息返回
 type Domain struct {
-	ID   int    `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
+//Record 解析记录返回
 type Record struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
@@ -35,33 +42,54 @@ var (
 	tPublic Public
 )
 
-func getDomainID(tDomain string) int {
-	apiHost := "https://dnsapi.cn/Domain.List"
+//SetToken 设置登陆密匙
+func SetToken(token string) {
+	tPublic.LoginToken = token
+	tPublic.ErrorOnEmpty = "false"
+	tPublic.Format = "json"
+	tPublic.Lang = "en"
+}
+
+//NewDomain 创建域名实例
+func NewDomain() (d *Domain, err error) {
+	return nil, nil
+}
+
+//GetDomainID 获取域名ID
+func GetDomainID(tDomain string) (string, error) {
+	apiHost := "https://dnsapi.cn/Domain.Info"
 	params := struct {
 		Public
-		Keyword string `form:"keyword"`
+		Domain string `form:"domain"`
 	}{
 		tPublic,
 		tDomain,
 	}
 	paramsValue := paramsMarshal(params)
 
-	//fmt.Println(paramsValue.Encode())
-
-	resp := postData(apiHost, paramsValue)
+	header := http.Header{}
+	header.Set("Content-Type", "application/x-www-form-urlencoded")
+	header.Set("User-Agent", fmt.Sprintf("RpiDDNS/0.1 (%s)", "iris-me@live.com"))
+	resp, err := utils.PostData(apiHost, paramsValue, header)
+	if err != nil {
+		return "", err
+	}
 	ret := &struct {
 		Status
-		Domains []Domain `json:"domains"`
+		Domain Domain `json:"domain"`
 	}{}
-	json.Unmarshal(resp, ret)
-	for _, domain := range ret.Domains {
-		if domain.Name == tDomain {
-			return domain.ID
-		}
+	err = json.Unmarshal(resp, ret)
+	if err != nil {
+		return "", err
 	}
-	return 0
+	if ret.Code == "1" {
+		return ret.Domain.ID, nil
+	}
+	return "", errors.New(ret.Message)
 }
-func getRecords(subDomain string, domainID string) []Record {
+
+//GetRecordID 获取subDomain的解析记录ID
+func GetRecordID(subDomain string, domainID string) (string, error) {
 	apiHost := "https://dnsapi.cn/Record.List"
 	params := struct {
 		Public
@@ -74,18 +102,26 @@ func getRecords(subDomain string, domainID string) []Record {
 	}
 	paramsValue := paramsMarshal(params)
 
-	//fmt.Println(paramsValue.Encode())
-
-	resp := postData(apiHost, paramsValue)
+	header := http.Header{}
+	header.Set("Content-Type", "application/x-www-form-urlencoded")
+	header.Set("User-Agent", fmt.Sprintf("RpiDDNS/0.1 (%s)", "iris-me@live.com"))
+	resp, err := utils.PostData(apiHost, paramsValue, header)
+	if err != nil {
+		return "", err
+	}
 	ret := &struct {
 		Status
 		Records []Record `json:"records"`
 	}{}
 	json.Unmarshal(resp, ret)
-	return ret.Records
+	if ret.Code != "1" {
+		return "", errors.New(ret.Message)
+	}
+	return ret.Records[0].ID, nil
 }
 
-func getRecord(domainID string, recordID string) Record {
+//GetRecordValue 获取解析记录信息
+func GetRecordValue(domainID string, recordID string) (string, error) {
 	apiHost := "https://dnsapi.cn/Record.Info"
 	params := struct {
 		Public
@@ -98,9 +134,13 @@ func getRecord(domainID string, recordID string) Record {
 	}
 	paramsValue := paramsMarshal(params)
 
-	//fmt.Println(paramsValue.Encode())
-
-	resp := postData(apiHost, paramsValue)
+	header := http.Header{}
+	header.Set("Content-Type", "application/x-www-form-urlencoded")
+	header.Set("User-Agent", fmt.Sprintf("RpiDDNS/0.1 (%s)", "iris-me@live.com"))
+	resp, err := utils.PostData(apiHost, paramsValue, header)
+	if err != nil {
+		return "", err
+	}
 	ret := &struct {
 		Status
 		Record struct {
@@ -109,18 +149,15 @@ func getRecord(domainID string, recordID string) Record {
 			Value     string `json:"value"`
 		} `json:"record"`
 	}{}
-
-	//fmt.Println(string(resp))
-
 	json.Unmarshal(resp, ret)
-	record := Record{}
-	record.ID = ret.Record.ID
-	record.Name = ret.Record.SubDomain
-	record.Value = ret.Record.Value
-	return record
+	if ret.Code != "1" {
+		return "", errors.New(ret.Message)
+	}
+	return ret.Record.Value, nil
 }
 
-func updateRecord(domainID string, recordID, subDomain, recordType, value string) (Record, error) {
+//UpdateRecord 提交更新记录
+func UpdateRecord(domainID string, recordID, subDomain, recordType, value string) error {
 	apiHost := "https://dnsapi.cn/Record.Modify"
 	params := struct {
 		Public
@@ -141,19 +178,23 @@ func updateRecord(domainID string, recordID, subDomain, recordType, value string
 	}
 	paramsValue := paramsMarshal(params)
 
-	//fmt.Println(paramsValue.Encode())
-
-	resp := postData(apiHost, paramsValue)
+	header := http.Header{}
+	header.Set("Content-Type", "application/x-www-form-urlencoded")
+	header.Set("User-Agent", fmt.Sprintf("RpiDDNS/0.1 (%s)", "iris-me@live.com"))
+	resp, err := utils.PostData(apiHost, paramsValue, header)
+	if err != nil {
+		return err
+	}
 	ret := &struct {
 		Status
-		Record Record `json:"record"`
 	}{}
 	json.Unmarshal(resp, ret)
 	if ret.Status.Code != "1" {
-		return Record{}, errors.New(ret.Status.Message)
+		return errors.New(ret.Status.Message)
 	}
-	return ret.Record, nil
+	return nil
 }
+
 func paramsMarshal(p interface{}) url.Values {
 	t := reflect.TypeOf(p)
 	v := reflect.ValueOf(p)
