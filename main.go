@@ -7,27 +7,122 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/urfave/cli"
+)
+
+const (
+	//NAME 程序名称
+	NAME = "RpiDDNS"
+	//VERSION 程序版本号
+	VERSION = "v1.0.2"
+	//AUTHOR 作者
+	AUTHOR = "im帥"
+	//EMAIL 作者邮箱
+	EMAIL = "iris-me@live.com"
 )
 
 var (
 	c = &config.Config{}
 )
 
-func init() {
-	var err error
-	if len(os.Args) > 1 {
-		err = c.Init(os.Args[1], os.Args[2])
-	} else {
-		err = c.Init("", "")
-	}
-	if err != nil {
-		c.Log.Fatal(err.Error())
-		fmt.Println(err)
-		os.Exit(-1)
-	}
-}
+// func init() {
+// 	var err error
+// 	if len(os.Args) > 1 {
+// 		err = c.Init(os.Args[1], os.Args[2])
+// 	} else {
+// 		err = c.Init("", "")
+// 	}
+// 	if err != nil {
+// 		c.Log.Fatal(err.Error())
+// 		fmt.Println(err)
+// 		os.Exit(-1)
+// 	}
+// }
 
 func main() {
+	app := cli.NewApp()
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  AUTHOR,
+			Email: EMAIL,
+		},
+	}
+	app.Name = NAME
+	app.Version = VERSION
+	app.Usage = "Update this computer's ipv4/ipv6 address to your dns record."
+	app.Copyright = time.Now().Format("2006") + " © " + AUTHOR
+
+	app.Commands = []cli.Command{
+		cli.Command{
+			Name: "run",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "config,c",
+					Usage: "path to config file",
+				},
+			},
+			Usage: "run with config file",
+			Action: func(c *cli.Context) error {
+				//TODO:完成初版功能
+
+				return nil
+			},
+		},
+		cli.Command{
+			Name: "update",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "domain,d",
+					Usage: "your domain name. like: baidu.com google.com home.yourdomain.com",
+				},
+				cli.StringFlag{
+					Name:  "subdomain,s",
+					Usage: "your subdomain name. like: pc router",
+				},
+				cli.StringFlag{
+					Name:  "type,t",
+					Usage: "your dns record type. like: A AAAA",
+				},
+				cli.StringFlag{
+					Name:  "ip",
+					Usage: "ip for update to dns record",
+				},
+				cli.StringFlag{
+					Name:  "provider,pd",
+					Value: "dnspod",
+					Usage: "your dns provider name. for now only support \"dnspod\"",
+				},
+				cli.StringFlag{
+					Name:  "username,u",
+					Usage: "your username for login ",
+				},
+				cli.StringFlag{
+					Name:  "password,p",
+					Usage: "your password for login",
+				},
+				cli.StringFlag{
+					Name:  "token",
+					Usage: "your access token for login",
+				},
+				cli.StringFlag{
+					Name:  "loglevel",
+					Value: "info",
+					Usage: "log level: none|fatal|error|warning|info|debug",
+				},
+			},
+			Usage: "update record once",
+			Action: func(c *cli.Context) error {
+				//TODO 完成初版功能
+				return nil
+			},
+		},
+	}
+
+	app.Run(os.Args)
+}
+
+func e() {
 	ipv4, err := utils.GetIPv4()
 	if err != nil {
 		c.Log.Error("get ipv4 address fail with error:", err.Error())
